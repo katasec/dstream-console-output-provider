@@ -1,0 +1,149 @@
+# .NET Build Outputs
+bin/
+obj/
+out/
+*.dll
+*.exe
+*.pdb
+*.deps.json
+*.runtimeconfig.json
+*.user
+*.suo
+*.cache
+*.log
+
+# Visual Studio / VS Code
+.vs/
+.vscode/
+*.sln.docstates
+*.userprefs
+.DS_Store
+
+# JetBrains IDEs (IntelliJ, Rider)
+.idea/
+*.iml
+*.iws
+
+# NuGet
+packages/
+*.nupkg
+*.snupkg
+nuget.exe
+**/packages.lock.json
+
+# Test Results
+TestResults/
+[Tt]est[Rr]esult*/
+*.trx
+*.coverage
+*.coveragexml
+
+# Build Results
+[Dd]ebug/
+[Dd]ebugPublic/
+[Rr]elease/
+[Rr]eleases/
+x64/
+x86/
+[Ww][Ii][Nn]32/
+[Aa][Rr][Mm]/
+[Aa][Rr][Mm]64/
+bld/
+[Bb]in/
+[Oo]bj/
+[Ll]og/
+[Ll]ogs/
+
+# MSTest test Results
+[Tt]est[Rr]esult*/
+[Bb]uild[Ll]og.*
+
+# Rider
+.idea/
+*.sln.iml
+
+# User-specific files
+*.rsuser
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# Mono Auto Generated Files
+mono_crash.*
+
+# Windows image file caches
+Thumbs.db
+ehthumbs.db
+
+# Folder config file
+Desktop.ini
+
+# Recycle Bin used on file shares
+$RECYCLE.BIN/
+
+# Mac
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Temporary files
+*.tmp
+*.temp
+*.swp
+*.swo
+*~
+
+# Logs
+logs
+*.log
+
+# Runtime data
+pids
+*.pid
+*.seed
+
+# Coverage directory used by tools like istanbul
+coverage/
+
+# DotCover
+*.dotCover
+
+# ReSharper
+_ReSharper*/
+*.[Rr]e[Ss]harper
+*.DotSettings.user
+
+# JustMock
+*.jmconfig
+
+# BizTalk
+*.btm.cs
+*.btm
+
+# OpenCover
+opencover/
+
+# Azure Stream Analytics
+ASALocalRun/
+
+# MSBuild Binary and Structured Log
+*.binlog
+
+# NVidia Nsight GPU debugger
+*.nvuser
+
+# MFractors (Xamarin productivity tool)
+.mfractor/
+
+# Local History for Visual Studio Code
+.history/
+
+# BeatPulse healthcheck temp database 
+healthchecksdb
+
+# DStream specific
+*.hcl.backup
+dstream.state
+*.tfstate
+*.tfstate.backup
