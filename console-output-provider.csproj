@@ -15,14 +15,10 @@
     <RuntimeIdentifier Condition="'$(RuntimeIdentifier)' == ''">osx-x64</RuntimeIdentifier>
   </PropertyGroup>
 
+  <!-- SDK References for clean abstractions -->
   <ItemGroup>
-    <PackageReference Include="Grpc.Net.Client" Version="2.57.0" />
-    <PackageReference Include="Grpc.Tools" Version="2.57.0">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
-    <PackageReference Include="Google.Protobuf" Version="3.24.3" />
-    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+    <ProjectReference Include="../dstream-dotnet-sdk/sdk/Katasec.DStream.Abstractions/Katasec.DStream.Abstractions.csproj" />
+    <ProjectReference Include="../dstream-dotnet-sdk/sdk/Katasec.DStream.SDK.Core/Katasec.DStream.SDK.Core.csproj" />
   </ItemGroup>
 
 </Project>
