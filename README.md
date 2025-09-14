@@ -1,179 +1,170 @@
 # DStream Console Output Provider
 
-A .NET console output provider for the DStream data streaming platform. This provider receives streaming data from input providers and outputs formatted data to the console.
+A simple .NET console output provider for the DStream data streaming platform. This provider receives streaming JSON data via stdin and outputs formatted data to the console via stdout.
 
 ## Overview
 
 The Console Output Provider is designed to:
-- Receive streaming data envelopes from DStream input providers
-- Format and display data in multiple configurable output formats  
-- Integrate seamlessly with the DStream Go CLI via HashiCorp's go-plugin protocol
-- Support cross-platform deployment as a self-contained binary
+- Receive streaming JSON envelopes via stdin from DStream orchestration
+- Format and display data in configurable output formats (simple text or JSON)
+- Integrate seamlessly with the DStream ecosystem using stdin/stdout communication
+- Demonstrate the minimal code needed to create a DStream output provider
 
 ## Features
 
 ### Output Formats
 
-The provider supports three output formats:
+The provider supports two simple output formats:
 
-1. **Structured** (default): Multi-line format with clear visual separation
+1. **Simple** (default): Clean message format with counter
    ```
-   ╭─── Message #1 ───
-   │ Timestamp: 2024-01-15 10:30:45 UTC
-   │ Source:    counter-input
-   │ Type:      counter
-   │ Data:      {"value": 42}
-   ╰─────────────────────────────
+   Message #1: {"value":1,"timestamp":"2025-09-14T17:11:21.5590040+00:00"}
+   Message #2: {"value":2,"timestamp":"2025-09-14T17:11:22.9125080+00:00"}
    ```
 
-2. **Compact**: Single-line format for dense output
-   ```
-   [2024-01-15 10:30:45 UTC] [counter-input] {"value": 42}
-   ```
-
-3. **JSON**: Raw JSON envelope output
+2. **JSON**: Raw JSON envelope output
    ```json
-   {
-     "source": "counter-input",
-     "type": "counter", 
-     "data": {"value": 42},
-     "metadata": {}
-   }
+   {"Payload":{"value":1,"timestamp":"2025-09-14T17:11:21.5590040+00:00"},"Meta":{"seq":1,"interval_ms":500,"provider":"counter-input-provider"}}
    ```
 
 ### Configuration
 
-The provider accepts configuration via JSON:
+The provider accepts simple configuration via JSON:
 
 ```json
 {
-  "outputFormat": "structured",
-  "settings": {
-    "enableTimestamp": true,
-    "showMetadata": true
-  }
+  "outputFormat": "simple"
 }
 ```
+
+**Available Options:**
+- `outputFormat`: `"simple"` (default) or `"json"`
 
 ## Building
 
 ### Prerequisites
-- .NET SDK (latest version recommended)
-- Cross-platform build support (for macOS ARM64 targeting x64)
+- .NET 9.0 SDK
+- DStream .NET SDK (referenced as project dependencies)
 
 ### Build Commands
 
 ```bash
-# Restore dependencies
-dotnet restore
-
-# Build debug version
-dotnet build
+# Build debug version (PowerShell on macOS)
+/usr/local/share/dotnet/dotnet build
 
 # Build release version  
-dotnet build -c Release
+/usr/local/share/dotnet/dotnet build -c Release
 
 # Publish self-contained binary (macOS x64)
-dotnet publish -c Release -r osx-x64 --self-contained
-
-# Publish for other platforms
-dotnet publish -c Release -r linux-x64 --self-contained
-dotnet publish -c Release -r win-x64 --self-contained
+/usr/local/share/dotnet/dotnet publish -c Release -r osx-x64 --self-contained
 ```
-
-### macOS ARM64 Compatibility
-
-On Apple Silicon Macs, the provider targets `osx-x64` to ensure compatibility with gRPC native libraries and runs under Rosetta 2 translation.
 
 ## Usage
 
 ### Standalone Testing
 
 ```bash
-# Test handshake
-echo '{}' | ./bin/Release/*/publish/console-output-provider handshake
+# Test configuration parsing and basic functionality
+echo '{"outputFormat": "simple"}
+{"source":"test","type":"test","data":{"value":123},"metadata":{"seq":1}}' | /usr/local/share/dotnet/dotnet run
 
-# Test data processing (structured format)
-echo '{"outputFormat":"structured"}' | ./bin/Release/*/publish/console-output-provider
-
-# Test with sample data
-(echo '{"outputFormat":"compact"}'; echo '{"source":"test","type":"sample","data":"Hello World"}') | \
-  ./bin/Release/*/publish/console-output-provider
+# Test with JSON output format
+echo '{"outputFormat": "json"}
+{"source":"test","type":"test","data":{"value":456},"metadata":{"seq":2}}' | /usr/local/share/dotnet/dotnet run
 ```
 
-### DStream Integration
-
-The provider is designed to work with the DStream Go CLI:
+### Pipeline Testing
 
 ```bash
-# Via DStream CLI (future integration)
-dstream run --input counter --output console --output-config '{"outputFormat":"json"}'
+# Test full pipeline with counter input provider
+echo '{"interval": 500, "max_count": 3}' | ../dstream-counter-input-provider/bin/Debug/net9.0/osx-x64/counter-input-provider 2>/dev/null | \
+echo '{"outputFormat": "simple"}' | /usr/local/share/dotnet/dotnet run
 ```
 
 ## Architecture
 
 ### Data Flow
 
-1. **Handshake**: Provider responds to Go plugin handshake protocol
-2. **Configuration**: Receives JSON configuration via stdin
-3. **Data Processing**: Continuously reads data envelopes from stdin
-4. **Output**: Formats and writes data to stdout based on configuration
+1. **Configuration**: Receives JSON configuration via stdin (first line)
+2. **Data Processing**: Continuously reads JSON envelopes from stdin (subsequent lines)
+3. **Output**: Formats and writes data to stdout based on configuration
+4. **Logging**: Writes status messages to stderr for debugging
 
-### Protocol Compatibility
+### Communication Protocol
 
-- **HashiCorp go-plugin**: Compatible with go-plugin gRPC transport
+- **stdin/stdout**: Simple JSON-based communication
 - **DStream Envelope Format**: Processes standardized data envelopes
-- **Streaming Interface**: Implements streaming I/O patterns (`IAsyncEnumerable<T>` equivalent)
+- **SDK Integration**: Uses `StdioProviderHost` from DStream .NET SDK
 
-## Development
+## Implementation
 
-### Project Structure
+### Code Structure (Complete Provider)
 
+```csharp
+using System.Text.Json;
+using Katasec.DStream.Abstractions;
+using Katasec.DStream.SDK.Core;
+
+// Simple top-level program entry point - uses SDK infrastructure
+await StdioProviderHost.RunOutputProviderAsync<ConsoleOutputProvider, ConsoleConfig>();
+
+public class ConsoleOutputProvider : ProviderBase<ConsoleConfig>, IOutputProvider
+{
+    private static int _messageCount = 0;
+
+    public async Task WriteAsync(IEnumerable<Envelope> batch, IPluginContext ctx, CancellationToken ct)
+    {
+        foreach (var envelope in batch)
+        {
+            if (ct.IsCancellationRequested) break;
+            
+            _messageCount++;
+            await OutputFormattedEnvelopeAsync(envelope, _messageCount, Config);
+        }
+    }
+
+    private async Task OutputFormattedEnvelopeAsync(Envelope envelope, int messageCount, ConsoleConfig config)
+    {
+        var format = config.OutputFormat?.ToLower() ?? "simple";
+        
+        switch (format)
+        {
+            case "json":
+                var json = JsonSerializer.Serialize(new { envelope.Payload, envelope.Meta });
+                await Console.Out.WriteLineAsync(json);
+                break;
+                
+            default:
+                await Console.Out.WriteLineAsync($"Message #{messageCount}: {envelope.Payload}");
+                break;
+        }
+    }
+}
+
+public record ConsoleConfig
+{
+    public string OutputFormat { get; init; } = "simple";
+}
 ```
-dstream-console-output-provider/
-├── Program.cs                          # Main provider implementation
-├── console-output-provider.csproj      # Project configuration
-├── dstream-console-output-provider.sln # Solution file
-├── README.md                           # Documentation
-└── .gitignore                          # Git ignore rules
-```
 
-### Key Classes
+### Key Components
 
-- **`ConsoleOutputProvider`**: Main provider service handling data processing
-- **`ProviderConfig`**: Configuration model for output formatting options
-- **`DataEnvelope`**: Data model matching DStream envelope structure
+- **`ConsoleOutputProvider`**: Main provider class inheriting from `ProviderBase<ConsoleConfig>`
+- **`ConsoleConfig`**: Simple configuration record with output format option
+- **`StdioProviderHost`**: SDK infrastructure handling stdin/stdout communication
 
-## Deployment
+## SDK Benefits
 
-The provider builds as a self-contained binary for easy deployment:
+**What the SDK handles for you:**
+- JSON configuration parsing and binding
+- stdin/stdout communication protocol
+- Process lifecycle and graceful shutdown  
+- Envelope deserialization
+- Error handling and logging
 
-- **Single File**: All dependencies bundled in one executable
-- **No Runtime Dependencies**: Includes .NET runtime
-- **Cross-Platform**: Supports Windows, macOS, and Linux
+**What you focus on:**
+- Business logic (formatting and output)
+- Configuration model
+- Data processing logic
 
-## Integration Points
-
-### DStream Ecosystem
-
-- **Go CLI Orchestration**: Launched and managed by DStream Go CLI
-- **Input Provider Compatibility**: Receives data from any DStream input provider
-- **Provider Chaining**: Can be combined with transformation providers
-- **Container Deployment**: Ready for OCI container packaging
-
-### Future Enhancements
-
-- Color-coded output based on data types
-- Filtering and search capabilities  
-- Export to file formats (CSV, JSON Lines)
-- Real-time statistics and monitoring
-- Custom formatting templates
-
-## Contributing
-
-This provider follows the DStream architecture principles:
-
-1. **Streaming-First**: Designed for continuous data processing
-2. **Plugin Architecture**: HashiCorp go-plugin compatibility
-3. **Independent Deployment**: Self-contained binary distribution
-4. **Configuration-Driven**: JSON-based configuration system
+This demonstrates the power of the DStream .NET SDK - a complete output provider in ~50 lines of code!
