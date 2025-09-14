@@ -1,6 +1,6 @@
 # DStream Console Output Provider
 
-A .NET 8 console output provider for the DStream data streaming platform. This provider receives streaming data from input providers and outputs formatted data to the console.
+A .NET console output provider for the DStream data streaming platform. This provider receives streaming data from input providers and outputs formatted data to the console.
 
 ## Overview
 
@@ -58,7 +58,7 @@ The provider accepts configuration via JSON:
 ## Building
 
 ### Prerequisites
-- .NET 8.0 SDK
+- .NET SDK (latest version recommended)
 - Cross-platform build support (for macOS ARM64 targeting x64)
 
 ### Build Commands
@@ -91,14 +91,14 @@ On Apple Silicon Macs, the provider targets `osx-x64` to ensure compatibility wi
 
 ```bash
 # Test handshake
-echo '{}' | ./bin/Release/net8.0/osx-x64/publish/console-output-provider handshake
+echo '{}' | ./bin/Release/*/publish/console-output-provider handshake
 
 # Test data processing (structured format)
-echo '{"outputFormat":"structured"}' | ./bin/Release/net8.0/osx-x64/publish/console-output-provider
+echo '{"outputFormat":"structured"}' | ./bin/Release/*/publish/console-output-provider
 
 # Test with sample data
 (echo '{"outputFormat":"compact"}'; echo '{"source":"test","type":"sample","data":"Hello World"}') | \
-  ./bin/Release/net8.0/osx-x64/publish/console-output-provider
+  ./bin/Release/*/publish/console-output-provider
 ```
 
 ### DStream Integration
