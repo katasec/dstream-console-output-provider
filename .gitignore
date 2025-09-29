@@ -383,3 +383,4 @@ FodyWeavers.xsd
 
 # JetBrains Rider
 *.sln.imlout/
+out/
