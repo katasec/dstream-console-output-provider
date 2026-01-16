@@ -14,7 +14,7 @@ public partial class ConsoleOutputProvider : InfrastructureProviderBase<ConsoleC
         // Simulate quick infrastructure creation
         await Task.Delay(100, ct);
         
-        var resources = new string[]
+        var resources = new[]
         {
             "console_log_target:stdout",
             "console_error_target:stderr",
